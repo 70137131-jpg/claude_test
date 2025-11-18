@@ -164,6 +164,56 @@ npm run lint
 └── package.json       # Root package.json
 ```
 
+## Deployment
+
+### 🚀 Deploy to Vercel (Recommended)
+
+This project is fully configured for one-click deployment to Vercel:
+
+#### Frontend Deployment
+```bash
+cd frontend
+vercel --prod
+```
+
+#### Backend Deployment (Flask)
+```bash
+cd backend-flask
+vercel --prod
+```
+
+For detailed deployment instructions, environment variables, and troubleshooting, see **[VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)**.
+
+### Backend Options
+
+This project includes **two backend implementations** with identical functionality:
+
+| Backend | Best For | Features |
+|---------|----------|----------|
+| **Flask** (`backend-flask/`) | ✅ Vercel deployment | Python, SQLAlchemy, Serverless-optimized |
+| **Node.js** (`backend/`) | Traditional hosting | Express, Prisma, WebSocket support |
+
+**For Vercel**: Use Flask backend
+**For Heroku/Railway/Docker**: Use Node.js backend
+
+Both provide:
+- JWT Authentication
+- Claude AI Integration
+- Git Repository Analysis
+- RESTful APIs
+- PostgreSQL Database
+
+### Quick Deploy Commands
+
+```bash
+# Deploy everything to Vercel
+cd frontend && vercel --prod
+cd ../backend-flask && vercel --prod
+
+# Or use traditional hosting
+docker-compose -f docker-compose.prod.yml up -d
+```
+
 ## Contributing
 
 Please read CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests.
