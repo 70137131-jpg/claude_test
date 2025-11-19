@@ -67,6 +67,8 @@ vercel --prod
 - `POST /api/reviews` - Create review
 - `GET /api/reviews` - List reviews
 - `GET /api/reviews/:id` - Get review details
+- `POST /api/reviews/:id/comments` - Add comment to review
+- `PATCH /api/reviews/:id/complete` - Mark review as complete
 
 ## Environment Variables
 
@@ -89,13 +91,16 @@ REDIS_URL=redis://localhost:6379
 ## Database Setup
 
 ```bash
-# Initialize database
-python -c "from app import db; db.create_all()"
+# Quick setup (recommended for development)
+python create_tables.py
 
-# Or use Flask-Migrate
+# Or use Flask-Migrate for production
 flask db init
 flask db migrate -m "Initial migration"
 flask db upgrade
+
+# Or use one-liner
+python -c "from app import db; db.create_all()"
 ```
 
 ## Project Structure
