@@ -47,8 +47,9 @@ tmp/
 temp/
 *.tmp
 
-# Prisma
-backend/prisma/migrations/
+# Uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
 
 # Docker
 docker-data/

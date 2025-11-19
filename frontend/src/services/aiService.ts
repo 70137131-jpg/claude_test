@@ -1,5 +1,6 @@
 import api from './api'
 import { CodeSuggestion, ChatMessage } from '@/types'
+import { useAuthStore } from '@/store/authStore'
 
 export const aiService = {
   // Get AI suggestions for a file
@@ -34,11 +35,12 @@ export const aiService = {
     message: string,
     onChunk: (chunk: string) => void
   ): Promise<void> => {
+    const token = useAuthStore.getState().token
     const response = await fetch(`${api.defaults.baseURL}/ai/chat/stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ projectId, message }),
     })

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { projectService } from '@/services/projectService'
 import { useProjectStore } from '@/store/projectStore'
 import Editor from '@monaco-editor/react'
-import SplitPane from 'react-split-pane'
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import FileTreeView from '@/components/FileTreeView'
 import SuggestionsList from '@/components/SuggestionsList'
 import DiffViewer from '@/components/DiffViewer'
@@ -142,36 +142,41 @@ export default function CodeReview() {
           <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
             {selectedFile ? (
               viewMode === 'split' ? (
-                <SplitPane split="horizontal" defaultSize="60%">
-                  <div className="h-full">
-                    <div className="bg-gray-100 dark:bg-gray-900 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                      <div className="flex items-center space-x-2">
-                        <Code className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {selectedFile}
-                        </span>
+                <PanelGroup direction="vertical">
+                  <Panel defaultSize={60} minSize={30}>
+                    <div className="h-full">
+                      <div className="bg-gray-100 dark:bg-gray-900 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center space-x-2">
+                          <Code className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            {selectedFile}
+                          </span>
+                        </div>
                       </div>
+                      <Editor
+                        height="calc(100% - 48px)"
+                        language={getLanguageFromPath(selectedFile)}
+                        value={fileContent}
+                        theme="vs-dark"
+                        options={{
+                          readOnly: true,
+                          minimap: { enabled: true },
+                          scrollBeyondLastLine: false,
+                          fontSize: 14,
+                        }}
+                      />
                     </div>
-                    <Editor
-                      height="100%"
-                      language={getLanguageFromPath(selectedFile)}
-                      value={fileContent}
-                      theme="vs-dark"
-                      options={{
-                        readOnly: true,
-                        minimap: { enabled: true },
-                        scrollBeyondLastLine: false,
-                        fontSize: 14,
-                      }}
-                    />
-                  </div>
-                  <div className="h-full overflow-y-auto">
-                    <SuggestionsList
-                      suggestions={currentFileAnalysis?.suggestions || []}
-                      projectId={id!}
-                    />
-                  </div>
-                </SplitPane>
+                  </Panel>
+                  <PanelResizeHandle className="h-2 bg-gray-200 dark:bg-gray-700 hover:bg-primary-500 transition-colors" />
+                  <Panel defaultSize={40} minSize={20}>
+                    <div className="h-full overflow-y-auto">
+                      <SuggestionsList
+                        suggestions={currentFileAnalysis?.suggestions || []}
+                        projectId={id!}
+                      />
+                    </div>
+                  </Panel>
+                </PanelGroup>
               ) : (
                 <DiffViewer
                   originalCode={fileContent}
