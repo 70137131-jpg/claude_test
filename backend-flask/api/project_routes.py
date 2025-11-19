@@ -6,6 +6,10 @@ from app import db
 from services.git_service import GitService
 from services.queue_service import add_analysis_job
 import os
+import zipfile
+import tempfile
+import shutil
+from werkzeug.utils import secure_filename
 
 bp = Blueprint('projects', __name__)
 git_service = GitService()
@@ -178,3 +182,91 @@ def trigger_analysis(current_user, project_id):
     add_analysis_job(project.id, project.local_path)
 
     return jsonify({'message': 'Analysis started'}), 200
+
+@bp.route('/upload', methods=['POST'])
+@token_required
+def upload_project(current_user):
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+
+    file = request.files['file']
+    project_name = request.form.get('name', '')
+
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+
+    if not file.filename.endswith('.zip'):
+        return jsonify({'error': 'Only ZIP files are allowed'}), 400
+
+    try:
+        # Save uploaded file to temp location
+        temp_zip = tempfile.NamedTemporaryFile(delete=False, suffix='.zip')
+        file.save(temp_zip.name)
+        temp_zip.close()
+
+        # Create project
+        project_id = str(uuid.uuid4())
+        if not project_name:
+            project_name = secure_filename(file.filename).replace('.zip', '')
+
+        project = Project(
+            id=project_id,
+            name=project_name,
+            user_id=current_user.id,
+            status=ProjectStatus.PENDING
+        )
+
+        db.session.add(project)
+        db.session.commit()
+
+        # Extract ZIP to project directory
+        upload_dir = os.getenv('UPLOAD_DIR', '/tmp/uploads')
+        os.makedirs(upload_dir, exist_ok=True)
+
+        extract_path = os.path.join(upload_dir, project_id)
+        os.makedirs(extract_path, exist_ok=True)
+
+        with zipfile.ZipFile(temp_zip.name, 'r') as zip_ref:
+            # Security check - prevent path traversal
+            for member in zip_ref.namelist():
+                if member.startswith('/') or '..' in member:
+                    raise ValueError('Invalid file path in ZIP')
+
+            zip_ref.extractall(extract_path)
+
+        # Clean up temp file
+        os.unlink(temp_zip.name)
+
+        # Update project with local path
+        project.local_path = extract_path
+
+        # Count files
+        file_count = sum([len(files) for _, _, files in os.walk(extract_path)])
+        project.file_count = file_count
+
+        db.session.commit()
+
+        # Add to analysis queue
+        add_analysis_job(project.id, extract_path)
+
+        return jsonify({
+            'id': project.id,
+            'name': project.name,
+            'status': project.status.value,
+            'file_count': project.file_count,
+            'created_at': project.created_at.isoformat()
+        }), 201
+
+    except zipfile.BadZipFile:
+        if 'project' in locals():
+            db.session.delete(project)
+            db.session.commit()
+        return jsonify({'error': 'Invalid ZIP file'}), 400
+
+    except Exception as e:
+        if 'project' in locals():
+            db.session.delete(project)
+            db.session.commit()
+        if 'extract_path' in locals() and os.path.exists(extract_path):
+            shutil.rmtree(extract_path)
+        return jsonify({'error': str(e)}), 500

@@ -60,7 +60,7 @@ def get_reviews(current_user):
         'updated_at': r.updated_at.isoformat()
     } for r in reviews]), 200
 
-@bp.route('/<review_id>', methods='GET'])
+@bp.route('/<review_id>', methods=['GET'])
 @token_required
 def get_review(current_user, review_id):
     review = Review.query.filter_by(id=review_id, user_id=current_user.id).first()
@@ -84,4 +84,110 @@ def get_review(current_user, review_id):
             'content': c.content,
             'created_at': c.created_at.isoformat()
         } for c in comments]
+    }), 200
+
+@bp.route('/<review_id>/comments', methods=['POST'])
+@token_required
+def add_comment(current_user, review_id):
+    review = Review.query.filter_by(id=review_id, user_id=current_user.id).first()
+
+    if not review:
+        return jsonify({'error': 'Review not found'}), 404
+
+    data = request.get_json()
+    file_path = data.get('filePath')
+    line = data.get('line')
+    content = data.get('content')
+
+    if not content:
+        return jsonify({'error': 'Comment content is required'}), 400
+
+    comment = ReviewComment(
+        id=str(uuid.uuid4()),
+        review_id=review_id,
+        user_id=current_user.id,
+        file_path=file_path,
+        line=line,
+        content=content
+    )
+
+    db.session.add(comment)
+    db.session.commit()
+
+    return jsonify({
+        'id': comment.id,
+        'review_id': comment.review_id,
+        'user_id': comment.user_id,
+        'file_path': comment.file_path,
+        'line': comment.line,
+        'content': comment.content,
+        'created_at': comment.created_at.isoformat()
+    }), 201
+
+@bp.route('/<review_id>/comments/<comment_id>', methods=['PUT'])
+@token_required
+def update_comment(current_user, review_id, comment_id):
+    comment = ReviewComment.query.filter_by(
+        id=comment_id,
+        review_id=review_id,
+        user_id=current_user.id
+    ).first()
+
+    if not comment:
+        return jsonify({'error': 'Comment not found'}), 404
+
+    data = request.get_json()
+    content = data.get('content')
+
+    if not content:
+        return jsonify({'error': 'Comment content is required'}), 400
+
+    comment.content = content
+    db.session.commit()
+
+    return jsonify({
+        'id': comment.id,
+        'content': comment.content,
+        'updated_at': comment.updated_at.isoformat()
+    }), 200
+
+@bp.route('/<review_id>/comments/<comment_id>', methods=['DELETE'])
+@token_required
+def delete_comment(current_user, review_id, comment_id):
+    comment = ReviewComment.query.filter_by(
+        id=comment_id,
+        review_id=review_id,
+        user_id=current_user.id
+    ).first()
+
+    if not comment:
+        return jsonify({'error': 'Comment not found'}), 404
+
+    db.session.delete(comment)
+    db.session.commit()
+
+    return jsonify({'message': 'Comment deleted successfully'}), 200
+
+@bp.route('/<review_id>', methods=['PUT'])
+@token_required
+def update_review_status(current_user, review_id):
+    review = Review.query.filter_by(id=review_id, user_id=current_user.id).first()
+
+    if not review:
+        return jsonify({'error': 'Review not found'}), 404
+
+    data = request.get_json()
+    status = data.get('status')
+
+    if status:
+        try:
+            review.status = ReviewStatus(status)
+            db.session.commit()
+        except ValueError:
+            return jsonify({'error': 'Invalid status'}), 400
+
+    return jsonify({
+        'id': review.id,
+        'status': review.status.value,
+        'updated_at': review.updated_at.isoformat()
     }), 200

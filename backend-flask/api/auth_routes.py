@@ -131,6 +131,14 @@ def get_current_user(current_user):
         'created_at': current_user.created_at.isoformat()
     }), 200
 
+@bp.route('/logout', methods=['POST'])
+@token_required
+def logout(current_user):
+    # Since we're using stateless JWT, logout is handled client-side
+    # The client should delete the token
+    # For enhanced security, you could maintain a blacklist of tokens
+    return jsonify({'message': 'Logged out successfully'}), 200
+
 @bp.route('/github', methods=['POST'])
 def github_callback():
     data = request.get_json()
