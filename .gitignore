@@ -53,6 +53,18 @@ backend/prisma/migrations/
 # Docker
 docker-data/
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+*.egg-info/
+
 # Misc
 .cache/
 .parcel-cache/
