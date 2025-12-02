@@ -1,6 +1,31 @@
-# AI-Powered Code Review & Refactoring Platform
+# 📄 PDF Q&A Assistant (MVP)
 
-A comprehensive full-stack application that analyzes codebases and provides intelligent AI-powered suggestions for code improvements.
+An AI-powered application that lets users upload PDF documents and ask questions about them using natural language. Built with LangChain, Flask, React, and Claude AI.
+
+> **Quick Start**: See [QUICKSTART.md](./QUICKSTART.md) for 5-minute setup guide
+>
+> **Full Documentation**: See [PDF_QA_ASSISTANT_README.md](./PDF_QA_ASSISTANT_README.md)
+
+---
+
+## What is This?
+
+Upload any PDF document and ask questions in plain English. The AI reads the document, understands context, and provides accurate answers with source citations.
+
+**Example:**
+- Upload a research paper
+- Ask: "What are the key findings?"
+- Get an accurate answer based on the document content
+
+---
+
+_This repository also contains an older AI-Powered Code Review Platform. See below for legacy features._
+
+---
+
+# Legacy: AI-Powered Code Review & Refactoring Platform
+
+The original project in this repository was a comprehensive full-stack application that analyzes codebases and provides intelligent AI-powered suggestions for code improvements.
 
 ## Features
 

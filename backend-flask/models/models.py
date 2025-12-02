@@ -16,6 +16,12 @@ class MessageRole(enum.Enum):
     USER = 'user'
     ASSISTANT = 'assistant'
 
+class PDFStatus(enum.Enum):
+    UPLOADING = 'uploading'
+    PROCESSING = 'processing'
+    READY = 'ready'
+    FAILED = 'failed'
+
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -90,8 +96,28 @@ class ChatMessage(db.Model):
     __tablename__ = 'chat_messages'
 
     id = db.Column(db.String(36), primary_key=True)
-    project_id = db.Column(db.String(36), db.ForeignKey('projects.id'), nullable=False)
+    project_id = db.Column(db.String(36), db.ForeignKey('projects.id'), nullable=True)
+    pdf_id = db.Column(db.String(36), db.ForeignKey('pdf_documents.id'), nullable=True)
     user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
     role = db.Column(db.Enum(MessageRole), nullable=False)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class PDFDocument(db.Model):
+    __tablename__ = 'pdf_documents'
+
+    id = db.Column(db.String(36), primary_key=True)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    filename = db.Column(db.String(255), nullable=False)
+    original_filename = db.Column(db.String(255), nullable=False)
+    file_path = db.Column(db.String(500), nullable=False)
+    file_size = db.Column(db.Integer, nullable=False)
+    page_count = db.Column(db.Integer)
+    status = db.Column(db.Enum(PDFStatus), default=PDFStatus.UPLOADING)
+    error_message = db.Column(db.Text)
+    vectorstore_path = db.Column(db.String(500))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    chat_messages = db.relationship('ChatMessage', backref='pdf_document', lazy=True, cascade='all, delete-orphan')
+    user = db.relationship('User', backref='pdf_documents', lazy=True)

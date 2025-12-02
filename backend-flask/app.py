@@ -22,13 +22,14 @@ migrate = Migrate(app, db)
 CORS(app, origins=os.getenv('CORS_ORIGIN', 'http://localhost:5173'))
 
 # Import routes
-from api import auth_routes, project_routes, ai_routes, review_routes
+from api import auth_routes, project_routes, ai_routes, review_routes, pdf_routes
 
 # Register blueprints
 app.register_blueprint(auth_routes.bp, url_prefix='/api/auth')
 app.register_blueprint(project_routes.bp, url_prefix='/api/projects')
 app.register_blueprint(ai_routes.bp, url_prefix='/api/ai')
 app.register_blueprint(review_routes.bp, url_prefix='/api/reviews')
+app.register_blueprint(pdf_routes.bp, url_prefix='/api/pdfs')
 
 # Health check endpoint
 @app.route('/health', methods=['GET'])

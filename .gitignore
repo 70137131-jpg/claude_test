@@ -53,6 +53,12 @@ backend/prisma/migrations/
 # Docker
 docker-data/
 
+# PDF Q&A Assistant
+backend-flask/uploads/
+backend-flask/vectorstores/
+uploads/
+vectorstores/
+
 # Misc
 .cache/
 .parcel-cache/

@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard'
 import ProjectView from './pages/ProjectView'
 import CodeReview from './pages/CodeReview'
 import Login from './pages/Login'
+import PDFChat from './pages/PDFChat'
 import { useAuthStore } from './store/authStore'
 
 function App() {
@@ -46,6 +47,16 @@ function App() {
               <Layout>
                 <CodeReview />
               </Layout>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/pdf-chat"
+          element={
+            isAuthenticated ? (
+              <PDFChat />
             ) : (
               <Navigate to="/login" replace />
             )
